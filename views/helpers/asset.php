@@ -9,7 +9,7 @@
  * @author Tim Koschuetzki, Property of Debuggable Ltd., http://debuggable.com
  */
 class AssetHelper extends AppHelper {
-	var $helpers = array('Common', 'Html');
+	var $helpers = array('Html');
 
 	var $settings = array(
 		'css' => array(
@@ -72,7 +72,7 @@ class AssetHelper extends AppHelper {
 		$this->settings = Set::merge($this->settings, $settings);
 		extract($this->settings);
 		$opts = $this->settings[$type];
-
+		
 		$this->_usePreprocessor = !empty($opts['preprocessor']['method']);
 
 		if (!class_exists('ShellDispatcher')) {
@@ -178,10 +178,22 @@ class AssetHelper extends AppHelper {
 		foreach ($package as $include => $rules) {
 			if ($this->_isAllowed($controller, $action, $rules)) {
 				if (strpos($include, '://') === false && strpos($include, '//') !== 0) {
+					if (strpos($include, 'plugins/') === 0) {
+						$fileName = explode('/', $include);
+						
+						$pluginName = Inflector::camelize($fileName[1]);
+						unset($fileName[0]);
+						unset($fileName[1]);
+						$pluginPath = App::pluginPath($pluginName);
+						$include = $pluginPath . 'webroot/' . implode('/', $fileName);
+					}
+					
 					if (strpos($include, '/') !== 0) {
 						$include = $opts['path'] . $include;
 					}
-					$includes[] = $include;
+					if(file_exists($include)) {
+						$includes[] = $include;
+					}
 				} else {
 					$externals[] = $include;
 				}
@@ -296,11 +308,11 @@ class AssetHelper extends AppHelper {
 		}
 
 		if ($type == 'js') {
-			echo '<script type="text/javascript" src="/js/' . $fileName . '"></script>';
+			echo $this->Html->script($fileName);
 		}
 
 		if ($type == 'css') {
-			echo '<link rel="stylesheet" type="text/css" href="/css/' . $fileName . '" />';
+			echo $this->Html->css($fileName);
 		}
 
 		return $fileName;
@@ -574,7 +586,7 @@ class AssetHelper extends AppHelper {
  * @author Tim Koschuetzki
  */
 	function _cssmin($css) {
-		require_once(APP . 'plugins' . DS . 'assets' . DS . 'vendors' . DS . 'cssmin.php');
+		App::import('Vendor', 'Assets.Cssmin');
 		return CssMin::process($css);
 	}
 /**
@@ -585,7 +597,7 @@ class AssetHelper extends AppHelper {
  * @author Tim Koschuetzki
  */
 	function _jsmin($js) {
-		require_once(APP . 'plugins' . DS . 'assets' . DS . 'vendors' . DS . 'jsmin.php');
+		App::import('Vendor', 'Assets.Jsmin');
 		return JSMin::minify($js);
 	}
 /**
