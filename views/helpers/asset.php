@@ -42,6 +42,7 @@ class AssetHelper extends AppHelper {
 				'per_file' => false
 			)
 		),
+		'cacheBuster' => false,
 		'cleanDir' => true,
 		'minify' => true,
 		'packaging' => true,
@@ -107,15 +108,6 @@ class AssetHelper extends AppHelper {
 		unset($settings['params'], $settings['cleanDir'], $settings['layout']);
 		$key = md5(json_encode($settings)) . md5(json_encode($includes));
 
-		if (!isset($this->_resultCache[$key])) {
-			if ($this->settings['packaging']) {
-				$this->_resultCache[$key] = $this->_packaged($includes, $type, $out);
-			} else {
-				$this->_resultCache[$key] = $this->_nonPackaged($includes, $type, $out);
-			}
-		}
-		$result = $this->_resultCache[$key];
-
 		if ($out) {
 			if (!isset($this->Html)) {
 				App::import('Helper', 'Html');
@@ -134,6 +126,15 @@ class AssetHelper extends AppHelper {
 				}
 			}
 		}
+
+		if (!isset($this->_resultCache[$key])) {
+			if ($this->settings['packaging']) {
+				$this->_resultCache[$key] = $this->_packaged($includes, $type, $out);
+			} else {
+				$this->_resultCache[$key] = $this->_nonPackaged($includes, $type, $out);
+			}
+		}
+		$result = $this->_resultCache[$key];		
 
 		return $result;
 	}
@@ -264,6 +265,9 @@ class AssetHelper extends AppHelper {
 
 		foreach ($result as $file) {
 			$file = r($opts['path'], '', $file);
+			if($this->settings['cacheBuster'] == true) {
+				$file .= '?v=' . time();
+			}
 			if ($type == 'js') {
 				echo $this->Html->script($file);
 			}
