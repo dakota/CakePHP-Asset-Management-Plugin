@@ -341,7 +341,7 @@ class AssetHelper extends AppHelper {
 
 				$replace = $opts['path'];
 				if (!empty($this->params['plugin'])) {
-					$replace = APP . 'plugins' . DS . $this->params['plugin'] . DS . $type;
+					$replace = APP . 'plugins' . DS . $this->params['plugin'] . DS . $type . DS;
 				}
 
 				$myPath = r(':path:', $replace, $myPath);
