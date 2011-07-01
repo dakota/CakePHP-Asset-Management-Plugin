@@ -251,10 +251,10 @@ class AssetHelper extends AppHelper {
 				$file .= '?v=' . time();
 			}
 			if ($type == 'js') {
-				echo sprintf('<script type="text/javascript" src="/js/%s"></script>', $file);
+				echo $this->Html->script($file);
 			}
 			if ($type == 'css') {
-				echo sprintf('<link rel="stylesheet" type="text/css" href="/css/%s"/>', $file);
+				echo $this->Html->css($file);
 			}
 		}
 	}
