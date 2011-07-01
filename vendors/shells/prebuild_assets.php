@@ -11,8 +11,6 @@ class PrebuildAssetsShell extends Shell {
 	function main() {
 		$this->out('Running prebuild assets shell.');
 
-		Configure::write('App.cache_assets', true);
-
 		if (isset($this->params['lang'])) {
 			$this->langs = explode(',', $this->params['lang']);
 		}
@@ -58,7 +56,9 @@ class PrebuildAssetsShell extends Shell {
 							'controller' => Inflector::underscore($pairData[0]),
 							'action' => $pairData[1]
 						),
-						'lang' => $lang,
+						'js' => array(
+							'locale' => $lang
+						),
 						'cleanDir' => false
 					);
 					$this->AssetHelper->includeFiles($inclusionRules, $settings, false);

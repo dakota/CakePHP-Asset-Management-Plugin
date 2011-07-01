@@ -31,7 +31,7 @@ class AssetHelper extends AppHelper {
 			'path' => JS,
 			'ext' => 'js',
 			'delim' => ";\n\n",
-			'i18n' => true,
+			'locale' => false,
 			'preprocessor' => array(
 				'method' => false,
 				'ext' => '',
@@ -53,13 +53,12 @@ class AssetHelper extends AppHelper {
 		)
 	);
 	var $params = array();
-	var $lang = null;
 	var $pathToNode = '/usr/local/bin/node';
-	var $_fileFetchingCache = array();
+
+	var $_fileCache = array();
 	var $_resultCache = array();
 	var $_preIncludeContent = '';
 	var $_usePreprocessor = true;
-
 /**
  * Builds the packaged and minified asset file for a given $package with $settings.
  *
@@ -91,39 +90,24 @@ class AssetHelper extends AppHelper {
 			$this->layouts = array($layout);
 		}
 
-		if (!isset($lang) && defined('LANG')) {
-			$lang = LANG;
-		}
-		if (isset($lang)) {
-			$this->lang = $lang;
-		}
-
 		$files = $this->_filesToInclude($package, $opts, $type);
 		$includes = $files[0];
 		$externals = $files[1];
-
-		// check to build cache
 
 		$settings = $this->settings;
 		unset($settings['params'], $settings['cleanDir'], $settings['layout']);
 		$key = md5(json_encode($settings)) . md5(json_encode($includes));
 
-		if ($out) {
-			if (!isset($this->Html)) {
-				App::import('Helper', 'Html');
-				$this->Html = new HtmlHelper();
-			}
+		if (!$out) {
+			return $result;
+		}
 
+		foreach ($externals as $file) {
 			if ($type == 'js') {
-				foreach ($externals as $file) {
-					echo $this->Html->script($file);
-				}
+				echo sprintf('<script type="text/javascript" src="%s"></script>', $file);
 			}
-
 			if ($type == 'css') {
-				foreach ($externals as $file) {
-					echo $this->Html->css($file);
-				}
+				echo sprintf('<link rel="stylesheet" type="text/css" href="%s"/>', $file);
 			}
 		}
 
@@ -145,7 +129,7 @@ class AssetHelper extends AppHelper {
  * @author Tim Koschuetzki
  */
 	function reset() {
-		$this->_fileFetchingCache = array();
+		$this->_fileCache = array();
 		$this->_resultCache = array();
 		$this->_preIncludeContent = '';
 	}
@@ -181,18 +165,18 @@ class AssetHelper extends AppHelper {
 				if (strpos($include, '://') === false && strpos($include, '//') !== 0) {
 					if (strpos($include, 'plugins/') === 0) {
 						$fileName = explode('/', $include);
-						
 						$pluginName = Inflector::camelize($fileName[1]);
 						unset($fileName[0]);
 						unset($fileName[1]);
 						$pluginPath = App::pluginPath($pluginName);
 						$include = $pluginPath . 'webroot/' . implode('/', $fileName);
 					}
-					
+
 					if (strpos($include, '/') !== 0) {
 						$include = $opts['path'] . $include;
 					}
-					if(file_exists($include)) {
+
+					if (file_exists($include)) {
 						$includes[] = $include;
 					}
 				} else {
@@ -227,13 +211,11 @@ class AssetHelper extends AppHelper {
 			}
 			$content .= file_get_contents($include);
 
-			if ($type === 'js') {
-				if ($this->lang && strpos($content, $opts['i18n']) !== false) {
-					$content = $this->_parseJsTranslations($content);
-				}
+			$ext = explode('.', $include);
+			$ext = array_pop($ext);
 
-				$ext = explode('.', $include);
-				$ext = array_pop($ext);
+			if ($type === 'js') {
+				$content = $this->_parseJsTranslations($content);
 
 				if ($this->_usePreprocessor && $ext == $opts['preprocessor']['ext']) {
 					$method = '_' . $opts['preprocessor']['method'];
@@ -269,15 +251,15 @@ class AssetHelper extends AppHelper {
 				$file .= '?v=' . time();
 			}
 			if ($type == 'js') {
-				echo $this->Html->script($file);
+				echo sprintf('<script type="text/javascript" src="/js/%s"></script>', $file);
 			}
 			if ($type == 'css') {
-				echo $this->Html->css($file);
+				echo sprintf('<link rel="stylesheet" type="text/css" href="/css/%s"/>', $file);
 			}
 		}
 	}
 /**
- * undocumented function
+ * Fetch the contents of the pre include file if necessary.
  *
  * @param string $includes 
  * @param string $opts 
@@ -299,8 +281,11 @@ class AssetHelper extends AppHelper {
 		}
 	}
 /**
- * undocumented function
+ * Return the packaged file for the set of $includes
  *
+ * @param string $includes 
+ * @param string $type 
+ * @param string $out 
  * @return void
  * @author Tim Koschuetzki
  */
@@ -357,7 +342,8 @@ class AssetHelper extends AppHelper {
 					$myPath = r(':pass:', $this->params['pass'][0], $myPath);
 				}
 
-				if ($this->_usePreprocessor && strpos($myPath, '.' . $opts['preprocessor']['ext']) === false) {
+				$hasPreprocessorExt = strpos($myPath, '.' . $opts['preprocessor']['ext']) === false;
+				if ($this->_usePreprocessor && $hasPreprocessorExt) {
 					$myPath .= '.' . $opts['preprocessor']['ext'];
 				} else {
 					$myPath .= '.' . $opts['ext'];
@@ -387,10 +373,8 @@ class AssetHelper extends AppHelper {
 
 		$fileName = 'aggregate' . DS . $fileNames . '_' . $mtimeBuffer;
 
-		if ($type == 'js') {
-			if ($this->lang) {
- 				$fileName .= '_' . $this->lang;
-			}
+		if ($type == 'js' && $opts['locale']) {
+			$fileName .= '_' . $opts['locale'];
 		}
 		if ($this->settings['minify']) {
 			$fileName .= '.min';
@@ -452,16 +436,16 @@ class AssetHelper extends AppHelper {
 
 		$result = '';
 		foreach ($package as $include) {
-			if (array_key_exists($include . $this->lang, $this->_fileFetchingCache)) {
-				$content = $this->_fileFetchingCache[$include . $this->lang];
-			} elseif (array_key_exists($include, $this->_fileFetchingCache)) {
-				$content = $this->_fileFetchingCache[$include];
+			if (isset($opts['locale']) && array_key_exists($include . $opts['locale'], $this->_fileCache)) {
+				$content = $this->_fileCache[$include . $opts['locale']];
+			} elseif (array_key_exists($include, $this->_fileCache)) {
+				$content = $this->_fileCache[$include];
 			} else {
 				$content = file_get_contents($include);
 
 				if ($type === 'js') {
-					if ($this->lang && strpos($content, $opts['i18n']) !== false) {
-						$cacheKey = $include . $this->lang;
+					if (isset($opts['locale']) && $opts['locale']) {
+						$cacheKey = $include . $opts['locale'];
 						$content = $this->_parseJsTranslations($content);
 					}
 				}
@@ -470,7 +454,9 @@ class AssetHelper extends AppHelper {
 				$ext = array_pop($ext);
 
 				$hasPreprocessorExt = $opts['preprocessor']['ext'] === $ext;
-				$usePreprocessor = $this->_usePreprocessor && $opts['preprocessor']['per_file'] && $hasPreprocessorExt;
+				$usePreprocessor = $this->_usePreprocessor && $opts['preprocessor']['per_file'];
+				$usePreprocessor = $usePreprocessor && $hasPreprocessorExt;
+
 				if ($type == 'css' && $usePreprocessor) {
 					$method = '_' . $opts['preprocessor']['method'];
 					$content = $this->{$method}($content);
@@ -491,10 +477,10 @@ class AssetHelper extends AppHelper {
 					}
 				}
 
-				if ($this->lang) {
-					$this->_fileFetchingCache[$include . $this->lang] = $content;
+				if (isset($opts['locale']) && $opts['locale']) {
+					$this->_fileCache[$include . $opts['locale']] = $content;
 				} else {
-					$this->_fileFetchingCache[$include] = $content;
+					$this->_fileCache[$include] = $content;
 				}
 			}
 
@@ -523,7 +509,7 @@ class AssetHelper extends AppHelper {
  */
 	function _less($less) {
 		$cmd = 'less' . DS . 'bin' . DS . 'lessc';
-		return $this->_runCmdOnTmpFile('css', $cmd, $less);
+		return $this->_runCmdOnContent('css', $cmd, $less);
 	}
 /**
  * Converts a given $kaffeine string into js.
@@ -534,7 +520,7 @@ class AssetHelper extends AppHelper {
  */
 	function _kaffeine($kaffeine) {
 		$cmd = 'kaffeine' . DS . 'bin' . DS . 'kaffeine -c';
-		return $this->_runCmdOnTmpFile('js', $cmd, $kaffeine);
+		return $this->_runCmdOnContent('js', $cmd, $kaffeine);
 	}
 /**
  * Minifies a given javascript string using uglifyjs.
@@ -545,7 +531,7 @@ class AssetHelper extends AppHelper {
  */
 	function _uglifyjs($js) {
 		$cmd = 'uglify-js' . DS . 'bin' . DS . 'uglifyjs -nc';
-		return $this->_runCmdOnTmpFile('js', $cmd, $js);
+		return $this->_runCmdOnContent('js', $cmd, $js);
 	}
 /**
  * Converts a given coffee script string into javascript
@@ -556,10 +542,11 @@ class AssetHelper extends AppHelper {
  */
 	function _coffeescript($coffee) {
 		$cmd = 'coffee-script' . DS . 'bin' . DS . 'coffee -p';
-		return $this->_runCmdOnTmpFile('js', $cmd, $coffee);
+		return $this->_runCmdOnContent('js', $cmd, $coffee);
 	}
 /**
- * undocumented function
+ * Runs the given command $cmd with the $type options (js or css) on
+ * the given content
  *
  * @param string $type 
  * @param string $cmd 
@@ -567,7 +554,7 @@ class AssetHelper extends AppHelper {
  * @return void
  * @author Tim Koschuetzki
  */
-	function _runCmdOnTmpFile($type, $cmd, $content) {
+	function _runCmdOnContent($type, $cmd, $content) {
 		$opts = $this->settings[$type];
 
 		$tmpFile = $opts['path'] . 'aggregate' . DS . md5($content) . '.' . $opts['preprocessor']['ext'];
@@ -575,11 +562,9 @@ class AssetHelper extends AppHelper {
 		file_put_contents($tmpFile, $content);
 		@chmod($tmpFile, 0777);
 
-		$cmd = APP . 'plugins' . DS . 'assets' . DS . 'vendors' . DS . 'node_modules' . DS . $cmd . ' ' . $tmpFile;
-
-		$err = array();
-		exec($cmd, $out);
-
+		$path = APP . 'plugins' . DS . 'assets' . DS . 'vendors' . DS . 'node_modules' . DS;
+		exec($this->pathToNode . ' ' . $path . $cmd . ' ' . $tmpFile, $out);
+		@unlink($tmpFile);
 		return trim(implode("\n", $out));
 	}
 /**
@@ -646,7 +631,6 @@ class AssetHelper extends AppHelper {
  * Concats the timestamps of the modified times of the files in an array $package
  * and returns the md5 hash of the result string. This is to have a unique representation
  * of the file modified times of a set of files.
- * undocumented function
  *
  * @param string $package 
  * @return void
@@ -662,7 +646,6 @@ class AssetHelper extends AppHelper {
 /**
  * Concatenates the values of an array and applies an md5 hash on the result string.
  * This is to encode an array into a unique string.
- * undocumented function
  *
  * @param string $package 
  * @return void
@@ -676,22 +659,25 @@ class AssetHelper extends AppHelper {
  * translated string.
  *
  * @param string $text the text to translate
- * @param string $lang optional target language
  * @return void
  * @author Tim Koschuetzki
  */
 	function _parseJsTranslations($text) {
+		$opts = $this->settings['js'];
+		if (!$opts['locale']) {
+			return $text;
+		}
+
 		$matches = array();
 		$length = strlen($text) - 1;
 		for ($i = 0; $i < $length; $i++) {
 			if ($text{$i} == '_' && $text{$i + 1} == '_' && $text{$i + 2} == '(') {
 				$match = '';
 				for ($j = $i + 3; $j < $length; $j++) {
-					if ($text{$j} != ')') {
-						$match .= $text{$j};
-					} else {
+					if ($text{$j} == ')') {
 						break;
 					}
+					$match .= $text{$j};
 				}
 				$matches[] = $match;
 				$i = $j;
@@ -699,7 +685,7 @@ class AssetHelper extends AppHelper {
 		}
 
 		$oldLang = Configure::read('Config.language');
-		Configure::write('Config.language', Configure::read('I18n.locale.' . $this->lang));
+		Configure::write('Config.language', Configure::read('I18n.locale.' . $opts['locale']));
 
 		// the matches are wrapped in single quotes or double quotes
 		// we need to take care of those when replacing the strings
