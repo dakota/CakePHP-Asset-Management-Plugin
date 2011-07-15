@@ -224,7 +224,7 @@ class AssetHelper extends AppHelper {
 			}
 
 			if ($type === 'css') {
-				$content = $this->_convertCssPaths($content);
+				$content = $this->_convertCssPaths($content, $include);
 				if ($this->_usePreprocessor && $ext == $opts['preprocessor']['ext']) {
 					$method = '_' . $opts['preprocessor']['method'];
 					$content = $this->{$method}($content);
@@ -494,9 +494,24 @@ class AssetHelper extends AppHelper {
  *
  * @author Tim Koschuetzki
  */
-	function _convertCssPaths($css) {
+	function _convertCssPaths($css, $includeFile) {
+		$newPath = '../';
+		if(strpos($includeFile, 'plugins/') !== false) {
+			$includePath = explode('/', $includeFile);
+			$cssPath = array();
+			$buildPath = false;
+			foreach($includePath as $pathFragment) {
+				if($buildPath && $pathFragment !== 'webroot' && strpos($pathFragment, '.css') === false) {
+					$cssPath[] = $pathFragment;
+				}
+				elseif($pathFragment == 'plugins') {
+					$buildPath = true;
+				}
+			}
+			$newPath = Router::url('/') . implode('/', $cssPath) . '/';
+		}
 		$pattern = '/url\([\'"]?([^\/\'"])([^\)\'"]+)[\'"]?\)/mi';
-		$replace = "url(../$1$2$3)";
+		$replace = "url({$newPath}$1$2$3)";
 		$result = preg_replace($pattern, $replace, $css);
 		return $result;
 	}
