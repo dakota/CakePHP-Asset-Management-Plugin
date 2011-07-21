@@ -7,6 +7,7 @@
     $settings = array(
         'type' => 'js',
         'packaging' => Configure::read('Assets.packaging'),
+		'minify' => Configure::read('Assets.minify'),
 		'cacheBuster' => Configure::read() > 0,
 		'js' => array(
 			'minification' => array(

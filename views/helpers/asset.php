@@ -484,7 +484,7 @@ class AssetHelper extends AppHelper {
 				}
 			}
 
-			$result .= $content . $delimiter;
+			$result .= "/***\n* {$include}\n***/\n\n" . $content . $delimiter;
 		}
 		return substr($result, 0, -1 * strlen($delimiter));
 	}
