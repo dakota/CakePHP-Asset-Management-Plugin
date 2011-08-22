@@ -62,8 +62,8 @@ class AssetHelper extends AppHelper {
 /**
  * Builds the packaged and minified asset file for a given $package with $settings.
  *
- * @param string $package 
- * @param string $type 
+ * @param string $package
+ * @param string $type
  * @param bool $out If true, <script> or <link> tags are printed.
  * @return The path to the packaged filename.
  * @author Tim Koschuetzki
@@ -72,7 +72,7 @@ class AssetHelper extends AppHelper {
 		$this->settings = Set::merge($this->settings, $settings);
 		extract($this->settings);
 		$opts = $this->settings[$type];
-		
+
 		$this->_usePreprocessor = !empty($opts['preprocessor']['method']);
 
 		if (!class_exists('ShellDispatcher')) {
@@ -118,7 +118,7 @@ class AssetHelper extends AppHelper {
 				$this->_resultCache[$key] = $this->_nonPackaged($includes, $type, $out);
 			}
 		}
-		$result = $this->_resultCache[$key];		
+		$result = $this->_resultCache[$key];
 
 		return $result;
 	}
@@ -137,7 +137,7 @@ class AssetHelper extends AppHelper {
  * Adds javascript specific to a view to the global registry to be embedded in the footer,
  * independent of the combined file we are building.
  *
- * @param string $js 
+ * @param string $js
  * @return void
  * @author Tim Koschuetzki
  */
@@ -151,7 +151,7 @@ class AssetHelper extends AppHelper {
 /**
  * undocumented function
  *
- * @param string $package 
+ * @param string $package
  * @return void
  * @author Tim Koschuetzki
  */
@@ -191,10 +191,10 @@ class AssetHelper extends AppHelper {
 /**
  * undocumented function
  *
- * @param string $includes 
- * @param string $externals 
- * @param string $type 
- * @param string $out 
+ * @param string $includes
+ * @param string $externals
+ * @param string $type
+ * @param string $out
  * @return void
  * @author Tim Koschuetzki
  */
@@ -261,8 +261,8 @@ class AssetHelper extends AppHelper {
 /**
  * Fetch the contents of the pre include file if necessary.
  *
- * @param string $includes 
- * @param string $opts 
+ * @param string $includes
+ * @param string $opts
  * @return void
  * @author Tim Koschuetzki
  */
@@ -283,9 +283,9 @@ class AssetHelper extends AppHelper {
 /**
  * Return the packaged file for the set of $includes
  *
- * @param string $includes 
- * @param string $type 
- * @param string $out 
+ * @param string $includes
+ * @param string $type
+ * @param string $out
  * @return void
  * @author Tim Koschuetzki
  */
@@ -310,8 +310,8 @@ class AssetHelper extends AppHelper {
  * Includes for example /webroot/js/views/controller_name/action.js and
  * /webroot/css/views/pages/view_pricing.less
  *
- * @param string $includes 
- * @param string $type 
+ * @param string $includes
+ * @param string $type
  * @return void
  * @author Tim Koschuetzki
  */
@@ -338,7 +338,7 @@ class AssetHelper extends AppHelper {
 				if (isset($this->params['action'])) {
 					$myPath = r(':action:', $this->params['action'], $myPath);
 				}
-				if (isset($this->params['pass'][0]) && preg_match('/^\w+$/', $this->params['pass'][0])) {
+				if (isset($this->params['pass'][0]) && preg_match('/^\w+$/', $this->params['pass'][0]) === 0) {
 					$myPath = r(':pass:', $this->params['pass'][0], $myPath);
 				}
 
@@ -361,7 +361,7 @@ class AssetHelper extends AppHelper {
  * Builds the combined, minified inclusion file for a given $package
  * of css or js files and returns the path to it.
  *
- * @param string $package 
+ * @param string $package
  * @return void
  * @author Tim Koschuetzki
  */
@@ -424,8 +424,8 @@ class AssetHelper extends AppHelper {
  * Minifies javascript if $type === 'js'. Adds $delimiter between the contents
  * of two different files.
  *
- * @param string $path 
- * @param string $type 
+ * @param string $path
+ * @param string $type
  * @return void
  * @author Tim Koschuetzki
  */
@@ -518,7 +518,7 @@ class AssetHelper extends AppHelper {
 /**
  * Converts a given $less string into css.
  *
- * @param string $less 
+ * @param string $less
  * @return void
  * @author Tim Koschuetzki
  */
@@ -529,7 +529,7 @@ class AssetHelper extends AppHelper {
 /**
  * Converts a given $kaffeine string into js.
  *
- * @param string $less 
+ * @param string $less
  * @return void
  * @author Tim Koschuetzki
  */
@@ -540,7 +540,7 @@ class AssetHelper extends AppHelper {
 /**
  * Minifies a given javascript string using uglifyjs.
  *
- * @param string $js 
+ * @param string $js
  * @return void
  * @author Tim Koschuetzki
  */
@@ -551,7 +551,7 @@ class AssetHelper extends AppHelper {
 /**
  * Converts a given coffee script string into javascript
  *
- * @param string $coffee 
+ * @param string $coffee
  * @return void
  * @author Tim Koschuetzki
  */
@@ -563,9 +563,9 @@ class AssetHelper extends AppHelper {
  * Runs the given command $cmd with the $type options (js or css) on
  * the given content
  *
- * @param string $type 
- * @param string $cmd 
- * @param string $content 
+ * @param string $type
+ * @param string $cmd
+ * @param string $content
  * @return void
  * @author Tim Koschuetzki
  */
@@ -585,7 +585,7 @@ class AssetHelper extends AppHelper {
 /**
  * Minifies a given $css string.
  *
- * @param string $css 
+ * @param string $css
  * @return void
  * @author Tim Koschuetzki
  */
@@ -596,7 +596,7 @@ class AssetHelper extends AppHelper {
 /**
  * Minifies a given javascript string using uglifyjs.
  *
- * @param string $js 
+ * @param string $js
  * @return void
  * @author Tim Koschuetzki
  */
@@ -607,7 +607,7 @@ class AssetHelper extends AppHelper {
 /**
  * undocumented function
  *
- * @param string $js 
+ * @param string $js
  * @return void
  * @author Tim Koschuetzki
  */
@@ -626,7 +626,7 @@ class AssetHelper extends AppHelper {
 /**
  * Removes all files with names starting with $buffer from $path.
  *
- * @param string $path 
+ * @param string $path
  * @return void
  * @author Tim Koschuetzki
  */
@@ -647,7 +647,7 @@ class AssetHelper extends AppHelper {
  * and returns the md5 hash of the result string. This is to have a unique representation
  * of the file modified times of a set of files.
  *
- * @param string $package 
+ * @param string $package
  * @return void
  * @author Tim Koschuetzki
  */
@@ -662,7 +662,7 @@ class AssetHelper extends AppHelper {
  * Concatenates the values of an array and applies an md5 hash on the result string.
  * This is to encode an array into a unique string.
  *
- * @param string $package 
+ * @param string $package
  * @return void
  * @author Tim Koschuetzki
  */
@@ -746,7 +746,7 @@ class AssetHelper extends AppHelper {
 				$negativeCondition = true;
 			}
 
-			if (preg_match('/^'.$allowedObject.'$/i', $object) && 
+			if (preg_match('/^'.$allowedObject.'$/i', $object) &&
 				preg_match('/^'.$allowedProperty.'$/i', $property)) {
 				$allowed = !$negativeCondition;
 			}
