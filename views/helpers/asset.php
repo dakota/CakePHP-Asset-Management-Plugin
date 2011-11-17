@@ -495,7 +495,7 @@ class AssetHelper extends AppHelper {
  *
  * @author Tim Koschuetzki
  */
-	function _convertCssPaths($css, $includeFile) {
+	function _convertCssPaths($css, $includeFile = '') {
 		$newPath = '../';
 		if(strpos($includeFile, 'plugins/') !== false) {
 			$includePath = explode('/', $includeFile);
