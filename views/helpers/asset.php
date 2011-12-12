@@ -591,7 +591,7 @@ class AssetHelper extends AppHelper {
  * @author Tim Koschuetzki
  */
 	function _cssmin($css) {
-		App::import('Vendor', 'Assets.Cssmin');
+		App::import('Vendor', 'AssetManagement.Cssmin');
 		return CssMin::process($css);
 	}
 /**
@@ -602,7 +602,7 @@ class AssetHelper extends AppHelper {
  * @author Tim Koschuetzki
  */
 	function _jsmin($js) {
-		App::import('Vendor', 'Assets.Jsmin');
+		App::import('Vendor', 'AssetManagement.Jsmin');
 		return JSMin::minify($js);
 	}
 /**
