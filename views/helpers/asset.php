@@ -1,4 +1,5 @@
 <?php
+
 /**
  * AssetHelper class
  *
@@ -9,8 +10,8 @@
  * @author Tim Koschuetzki, Property of Debuggable Ltd., http://debuggable.com
  */
 class AssetHelper extends AppHelper {
-	var $helpers = array('Html');
 
+	var $helpers = array('Html');
 	var $settings = array(
 		'css' => array(
 			'path' => CSS,
@@ -54,20 +55,20 @@ class AssetHelper extends AppHelper {
 	);
 	var $params = array();
 	var $pathToNode = '/usr/local/bin/node';
-
 	var $_fileCache = array();
 	var $_resultCache = array();
 	var $_preIncludeContent = '';
 	var $_usePreprocessor = true;
-/**
- * Builds the packaged and minified asset file for a given $package with $settings.
- *
- * @param string $package
- * @param string $type
- * @param bool $out If true, <script> or <link> tags are printed.
- * @return The path to the packaged filename.
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Builds the packaged and minified asset file for a given $package with $settings.
+	 *
+	 * @param string $package
+	 * @param string $type
+	 * @param bool $out If true, <script> or <link> tags are printed.
+	 * @return The path to the packaged filename.
+	 * @author Tim Koschuetzki
+	 */
 	function includeFiles($package, $settings, $out = true) {
 		$this->settings = Set::merge($this->settings, $settings);
 		extract($this->settings);
@@ -122,25 +123,27 @@ class AssetHelper extends AppHelper {
 
 		return $result;
 	}
-/**
- * Resets the helper's internal cache system.
- *
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Resets the helper's internal cache system.
+	 *
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function reset() {
 		$this->_fileCache = array();
 		$this->_resultCache = array();
 		$this->_preIncludeContent = '';
 	}
-/**
- * Adds javascript specific to a view to the global registry to be embedded in the footer,
- * independent of the combined file we are building.
- *
- * @param string $js
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Adds javascript specific to a view to the global registry to be embedded in the footer,
+	 * independent of the combined file we are building.
+	 *
+	 * @param string $js
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function addPageJavascript($js) {
 		$key = 'page_javascript';
 		$value = Configure::read($key);
@@ -148,13 +151,14 @@ class AssetHelper extends AppHelper {
 		Configure::write($key, $value);
 		return $value;
 	}
-/**
- * undocumented function
- *
- * @param string $package
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * undocumented function
+	 *
+	 * @param string $package
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _filesToInclude($package, $opts, $type) {
 		$includes = $externals = array();
 		$controller = Inflector::camelize(@$this->params['controller']);
@@ -188,16 +192,17 @@ class AssetHelper extends AppHelper {
 		$includes = am($includes, $this->_autoIncludePaths($type));
 		return array($includes, $externals);
 	}
-/**
- * undocumented function
- *
- * @param string $includes
- * @param string $externals
- * @param string $type
- * @param string $out
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * undocumented function
+	 *
+	 * @param string $includes
+	 * @param string $externals
+	 * @param string $type
+	 * @param string $out
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _nonPackaged($includes, $type, $out) {
 		$opts = $this->settings[$type];
 		$result = array();
@@ -247,7 +252,7 @@ class AssetHelper extends AppHelper {
 
 		foreach ($result as $file) {
 			$file = r($opts['path'], '', $file);
-			if($this->settings['cacheBuster'] == true) {
+			if ($this->settings['cacheBuster'] == true) {
 				$file .= '?v=' . time();
 			}
 			if ($type == 'js') {
@@ -258,17 +263,18 @@ class AssetHelper extends AppHelper {
 			}
 		}
 	}
-/**
- * Fetch the contents of the pre include file if necessary.
- *
- * @param string $includes
- * @param string $opts
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Fetch the contents of the pre include file if necessary.
+	 *
+	 * @param string $includes
+	 * @param string $opts
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _parsePreIncludeFile($includes, $opts) {
 		$preIncludeFile = $this->_usePreprocessor &&
-						  !empty($opts['preprocessor']['pre_include_file']);
+			!empty($opts['preprocessor']['pre_include_file']);
 		if (!$preIncludeFile || !empty($this->_preIncludeContent)) {
 			return;
 		}
@@ -280,15 +286,16 @@ class AssetHelper extends AppHelper {
 			}
 		}
 	}
-/**
- * Return the packaged file for the set of $includes
- *
- * @param string $includes
- * @param string $type
- * @param string $out
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Return the packaged file for the set of $includes
+	 *
+	 * @param string $includes
+	 * @param string $type
+	 * @param string $out
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _packaged($includes, $type, $out) {
 		$fileName = $this->_buildFileForPackage($includes, $type);
 
@@ -306,15 +313,16 @@ class AssetHelper extends AppHelper {
 
 		return $fileName;
 	}
-/**
- * Includes for example /webroot/js/views/controller_name/action.js and
- * /webroot/css/views/pages/view_pricing.less
- *
- * @param string $includes
- * @param string $type
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Includes for example /webroot/js/views/controller_name/action.js and
+	 * /webroot/css/views/pages/view_pricing.less
+	 *
+	 * @param string $includes
+	 * @param string $type
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _autoIncludePaths($type) {
 		$paths = $this->settings['auto_include_paths'];
 		$opts = $this->settings[$type];
@@ -324,21 +332,18 @@ class AssetHelper extends AppHelper {
 			foreach ($this->layouts as $layout) {
 				$myPath = $path;
 
-				$replace = $opts['path'];
-				if (!empty($this->params['plugin'])) {
-					$replace = APP . 'plugins' . DS . $this->params['plugin'] . DS . $type . DS;
-				}
-
-				$myPath = r(':path:', $replace, $myPath);
 				$myPath = r(':layout:', $layout, $myPath);
 
+				if (isset($this->params['plugin'])) {
+					$myPath = r(':plugin:', $this->params['controller'], $myPath);
+				}
 				if (isset($this->params['controller'])) {
 					$myPath = r(':controller:', $this->params['controller'], $myPath);
 				}
 				if (isset($this->params['action'])) {
 					$myPath = r(':action:', $this->params['action'], $myPath);
 				}
-				
+
 				if (isset($this->params['pass'][0]) && preg_match('/^[\w-]+$/', $this->params['pass'][0]) === 1) {
 					$myPath = r(':pass:', $this->params['pass'][0], $myPath);
 				}
@@ -350,7 +355,18 @@ class AssetHelper extends AppHelper {
 					$myPath .= '.' . $opts['ext'];
 				}
 
-				if (file_exists($myPath) && !in_array($myPath, $result)) {
+
+				if (!empty($this->params['plugin'])) {
+					$replace = APP . 'plugins' . DS . $this->params['plugin'] . DS . 'webroot' . DS . $type . DS;
+					$pluginPath = r(':path:', $replace, $myPath);
+				}
+
+				$replace = $opts['path'];
+				$myPath = r(':path:', $replace, $myPath);
+
+				if (isset($pluginPath) && file_exists($pluginPath) && !in_array($pluginPath, $result)) {
+					$result[] = $pluginPath;
+				} elseif (file_exists($myPath) && !in_array($myPath, $result)) {
 					$result[] = $myPath;
 				}
 			}
@@ -358,14 +374,15 @@ class AssetHelper extends AppHelper {
 
 		return $result;
 	}
-/**
- * Builds the combined, minified inclusion file for a given $package
- * of css or js files and returns the path to it.
- *
- * @param string $package
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Builds the combined, minified inclusion file for a given $package
+	 * of css or js files and returns the path to it.
+	 *
+	 * @param string $package
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _buildFileForPackage($package, $type = 'css') {
 		$opts = $this->settings[$type];
 
@@ -420,16 +437,17 @@ class AssetHelper extends AppHelper {
 		}
 		return $fileName;
 	}
-/**
- * Fetches the contents of all files from an array of files.
- * Minifies javascript if $type === 'js'. Adds $delimiter between the contents
- * of two different files.
- *
- * @param string $path
- * @param string $type
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Fetches the contents of all files from an array of files.
+	 * Minifies javascript if $type === 'js'. Adds $delimiter between the contents
+	 * of two different files.
+	 *
+	 * @param string $path
+	 * @param string $type
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _fetchContentFromPackage($package, $type, $delimiter) {
 		$opts = $this->settings[$type];
 
@@ -489,23 +507,23 @@ class AssetHelper extends AppHelper {
 		}
 		return substr($result, 0, -1 * strlen($delimiter));
 	}
-/**
- * Change the relative folders because the combined file
- * will be saved in /css/aggregate
- *
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Change the relative folders because the combined file
+	 * will be saved in /css/aggregate
+	 *
+	 * @author Tim Koschuetzki
+	 */
 	function _convertCssPaths($css, $includeFile = '') {
 		$newPath = '../';
-		if(strpos($includeFile, 'plugins/') !== false) {
+		if (strpos($includeFile, 'plugins/') !== false) {
 			$includePath = explode('/', $includeFile);
 			$cssPath = array();
 			$buildPath = false;
-			foreach($includePath as $pathFragment) {
-				if($buildPath && $pathFragment !== 'webroot' && strpos($pathFragment, '.css') === false) {
+			foreach ($includePath as $pathFragment) {
+				if ($buildPath && $pathFragment !== 'webroot' && strpos($pathFragment, '.css') === false) {
 					$cssPath[] = $pathFragment;
-				}
-				elseif($pathFragment == 'plugins') {
+				} elseif ($pathFragment == 'plugins') {
 					$buildPath = true;
 				}
 			}
@@ -516,60 +534,65 @@ class AssetHelper extends AppHelper {
 		$result = preg_replace($pattern, $replace, $css);
 		return $result;
 	}
-/**
- * Converts a given $less string into css.
- *
- * @param string $less
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Converts a given $less string into css.
+	 *
+	 * @param string $less
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _less($less) {
 		$cmd = 'less' . DS . 'bin' . DS . 'lessc';
 		return $this->_runCmdOnContent('css', $cmd, $less);
 	}
-/**
- * Converts a given $kaffeine string into js.
- *
- * @param string $less
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Converts a given $kaffeine string into js.
+	 *
+	 * @param string $less
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _kaffeine($kaffeine) {
 		$cmd = 'kaffeine' . DS . 'bin' . DS . 'kaffeine -c';
 		return $this->_runCmdOnContent('js', $cmd, $kaffeine);
 	}
-/**
- * Minifies a given javascript string using uglifyjs.
- *
- * @param string $js
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Minifies a given javascript string using uglifyjs.
+	 *
+	 * @param string $js
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _uglifyjs($js) {
 		$cmd = 'uglify-js' . DS . 'bin' . DS . 'uglifyjs -nc';
 		return $this->_runCmdOnContent('js', $cmd, $js);
 	}
-/**
- * Converts a given coffee script string into javascript
- *
- * @param string $coffee
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Converts a given coffee script string into javascript
+	 *
+	 * @param string $coffee
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _coffeescript($coffee) {
 		$cmd = 'coffee-script' . DS . 'bin' . DS . 'coffee -p';
 		return $this->_runCmdOnContent('js', $cmd, $coffee);
 	}
-/**
- * Runs the given command $cmd with the $type options (js or css) on
- * the given content
- *
- * @param string $type
- * @param string $cmd
- * @param string $content
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Runs the given command $cmd with the $type options (js or css) on
+	 * the given content
+	 *
+	 * @param string $type
+	 * @param string $cmd
+	 * @param string $content
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _runCmdOnContent($type, $cmd, $content) {
 		$opts = $this->settings[$type];
 
@@ -583,35 +606,38 @@ class AssetHelper extends AppHelper {
 		@unlink($tmpFile);
 		return trim(implode("\n", $out));
 	}
-/**
- * Minifies a given $css string.
- *
- * @param string $css
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Minifies a given $css string.
+	 *
+	 * @param string $css
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _cssmin($css) {
 		App::import('Vendor', 'AssetManagement.Cssmin');
 		return CssMin::process($css);
 	}
-/**
- * Minifies a given javascript string using uglifyjs.
- *
- * @param string $js
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Minifies a given javascript string using uglifyjs.
+	 *
+	 * @param string $js
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _jsmin($js) {
 		App::import('Vendor', 'AssetManagement.Jsmin');
 		return JSMin::minify($js);
 	}
-/**
- * undocumented function
- *
- * @param string $js
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * undocumented function
+	 *
+	 * @param string $js
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _google_closure($js) {
 		$ch = curl_init('http://closure-compiler.appspot.com/compile');
 
@@ -624,13 +650,14 @@ class AssetHelper extends AppHelper {
 
 		return $output;
 	}
-/**
- * Removes all files with names starting with $buffer from $path.
- *
- * @param string $path
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Removes all files with names starting with $buffer from $path.
+	 *
+	 * @param string $path
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _cleanDir($path, $buffer) {
 		require_once(LIBS . 'folder.php');
 		$folder = new Folder($path);
@@ -643,15 +670,16 @@ class AssetHelper extends AppHelper {
 			}
 		}
 	}
-/**
- * Concats the timestamps of the modified times of the files in an array $package
- * and returns the md5 hash of the result string. This is to have a unique representation
- * of the file modified times of a set of files.
- *
- * @param string $package
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Concats the timestamps of the modified times of the files in an array $package
+	 * and returns the md5 hash of the result string. This is to have a unique representation
+	 * of the file modified times of a set of files.
+	 *
+	 * @param string $package
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _concatFileMtime($package) {
 		$result = '';
 		foreach ($package as $file) {
@@ -659,25 +687,27 @@ class AssetHelper extends AppHelper {
 		}
 		return md5($result);
 	}
-/**
- * Concatenates the values of an array and applies an md5 hash on the result string.
- * This is to encode an array into a unique string.
- *
- * @param string $package
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Concatenates the values of an array and applies an md5 hash on the result string.
+	 * This is to encode an array into a unique string.
+	 *
+	 * @param string $package
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _concatFileNames($package) {
 		return md5(implode($package));
 	}
-/**
- * Takes a $text and replaces all occurances of __('some string') with the proper
- * translated string.
- *
- * @param string $text the text to translate
- * @return void
- * @author Tim Koschuetzki
- */
+
+	/**
+	 * Takes a $text and replaces all occurances of __('some string') with the proper
+	 * translated string.
+	 *
+	 * @param string $text the text to translate
+	 * @return void
+	 * @author Tim Koschuetzki
+	 */
 	function _parseJsTranslations($text) {
 		$opts = $this->settings['js'];
 		if (!$opts['locale']) {
@@ -719,16 +749,17 @@ class AssetHelper extends AppHelper {
 
 		return $text;
 	}
-/**
- * Checks if the given $object/$property combination fits the $rules.
- *
- * @param string $object a controller name, like 'Signups'
- * @param string $property an action name, like 'index'
- * @param string $rules a rules string, like '!*:*, Auth:master_login, Auth:login, Auth:logout'
- * @param bool $default allow by default or not
- * @return void
- * @access public
- */
+
+	/**
+	 * Checks if the given $object/$property combination fits the $rules.
+	 *
+	 * @param string $object a controller name, like 'Signups'
+	 * @param string $property an action name, like 'index'
+	 * @param string $rules a rules string, like '!*:*, Auth:master_login, Auth:login, Auth:logout'
+	 * @param bool $default allow by default or not
+	 * @return void
+	 * @access public
+	 */
 	function _isAllowed($object, $property, $rules, $default = false) {
 		$allowed = $default;
 
@@ -747,12 +778,14 @@ class AssetHelper extends AppHelper {
 				$negativeCondition = true;
 			}
 
-			if (preg_match('/^'.$allowedObject.'$/i', $object) &&
-				preg_match('/^'.$allowedProperty.'$/i', $property)) {
+			if (preg_match('/^' . $allowedObject . '$/i', $object) &&
+				preg_match('/^' . $allowedProperty . '$/i', $property)) {
 				$allowed = !$negativeCondition;
 			}
 		}
 		return $allowed;
 	}
+
 }
+
 ?>
