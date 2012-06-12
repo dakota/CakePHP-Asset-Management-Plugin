@@ -76,17 +76,14 @@ class AssetHelper extends AppHelper {
 
 		$this->_usePreprocessor = !empty($opts['preprocessor']['method']);
 
-		if (!class_exists('ShellDispatcher')) {
-			$View = ClassRegistry::getObject('view');
-			$this->params = $View->params;
-		} elseif (isset($params)) {
-			$this->params = $params;
+		if (class_exists('ShellDispatcher') && isset($params)) {
+			$this->request->params = $params;
 		}
 
-		if (isset($View->layouts)) {
-			$this->layouts = $View->layouts;
-		} else if (isset($View)) {
-			$this->layouts = array($View->layout);
+		if (isset($this->_View->layouts)) {
+			$this->layouts = $this->_View->layouts;
+		} else if (isset($this->_View)) {
+			$this->layouts = array($this->_View->layout);
 		} elseif (isset($layout)) {
 			$this->layouts = array($layout);
 		}
@@ -161,8 +158,8 @@ class AssetHelper extends AppHelper {
 	 */
 	function _filesToInclude($package, $opts, $type) {
 		$includes = $externals = array();
-		$controller = Inflector::camelize(@$this->params['controller']);
-		$action = @$this->params['action'];
+		$controller = Inflector::camelize(@$this->request->params['controller']);
+		$action = @$this->request->params['action'];
 
 		foreach ($package as $include => $rules) {
 			if ($this->_isAllowed($controller, $action, $rules)) {
@@ -237,7 +234,7 @@ class AssetHelper extends AppHelper {
 			}
 
 			$toRemove = array('.' . $opts['preprocessor']['ext'], '.' . $opts['ext']);
-			$file = r($toRemove, '', basename($include));
+			$file = str_replace($toRemove, '', basename($include));
 			$file = $opts['path'] . 'aggregate' . DS . $file . '.' . $opts['ext'];
 
 			file_put_contents($file, $content);
@@ -251,7 +248,7 @@ class AssetHelper extends AppHelper {
 		}
 
 		foreach ($result as $file) {
-			$file = r($opts['path'], '', $file);
+			$file = str_replace($opts['path'], '', $file);
 			if ($this->settings['cacheBuster'] == true) {
 				$file .= '?v=' . time();
 			}
@@ -332,20 +329,20 @@ class AssetHelper extends AppHelper {
 			foreach ($this->layouts as $layout) {
 				$myPath = $path;
 
-				$myPath = r(':layout:', $layout, $myPath);
+				$myPath = str_replace(':layout:', $layout, $myPath);
 
-				if (isset($this->params['plugin'])) {
-					$myPath = r(':plugin:', $this->params['controller'], $myPath);
+				if (isset($this->request->params['plugin'])) {
+					$myPath = str_replace(':plugin:', $this->request->params['controller'], $myPath);
 				}
-				if (isset($this->params['controller'])) {
-					$myPath = r(':controller:', $this->params['controller'], $myPath);
+				if (isset($this->request->params['controller'])) {
+					$myPath = str_replace(':controller:', $this->request->params['controller'], $myPath);
 				}
-				if (isset($this->params['action'])) {
-					$myPath = r(':action:', $this->params['action'], $myPath);
+				if (isset($this->request->params['action'])) {
+					$myPath = str_replace(':action:', $this->request->params['action'], $myPath);
 				}
 
-				if (isset($this->params['pass'][0]) && preg_match('/^[\w-]+$/', $this->params['pass'][0]) === 1) {
-					$myPath = r(':pass:', $this->params['pass'][0], $myPath);
+				if (isset($this->request->params['pass'][0]) && preg_match('/^[\w-]+$/', $this->request->params['pass'][0]) === 1) {
+					$myPath = str_replace(':pass:', $this->request->params['pass'][0], $myPath);
 				}
 
 				$hasPreprocessorExt = strpos($myPath, '.' . $opts['preprocessor']['ext']) === false;
@@ -356,13 +353,13 @@ class AssetHelper extends AppHelper {
 				}
 
 
-				if (!empty($this->params['plugin'])) {
-					$replace = APP . 'plugins' . DS . $this->params['plugin'] . DS . 'webroot' . DS . $type . DS;
-					$pluginPath = r(':path:', $replace, $myPath);
+				if (!empty($this->request->params['plugin'])) {
+					$replace = APP . 'plugins' . DS . $this->request->params['plugin'] . DS . 'webroot' . DS . $type . DS;
+					$pluginPath = str_replace(':path:', $replace, $myPath);
 				}
 
 				$replace = $opts['path'];
-				$myPath = r(':path:', $replace, $myPath);
+				$myPath = str_replace(':path:', $replace, $myPath);
 
 				if (isset($pluginPath) && file_exists($pluginPath) && !in_array($pluginPath, $result)) {
 					$result[] = $pluginPath;
@@ -659,7 +656,7 @@ class AssetHelper extends AppHelper {
 	 * @author Tim Koschuetzki
 	 */
 	function _cleanDir($path, $buffer) {
-		require_once(LIBS . 'folder.php');
+		require_once(CAKE . 'folder.php');
 		$folder = new Folder($path);
 		$contents = $folder->read();
 		$files = $contents[1];
@@ -739,10 +736,10 @@ class AssetHelper extends AppHelper {
 			$quote = substr($match, 0, 1);
 			$matchWithoutQuotes = substr($match, 1, strlen($match) - 2);
 
-			$translation = __($matchWithoutQuotes, true);
-			$translation = r(a("'", '"'), a("\\'", '\\"'), $translation);
+			$translation = __($matchWithoutQuotes);
+			$translation = str_replace(array("'", '"'), a("\\'", '\\"'), $translation);
 
-			$text = r('__(' . $match . ')', $quote . $translation . $quote, $text);
+			$text = str_replace('__(' . $match . ')', $quote . $translation . $quote, $text);
 		}
 
 		Configure::write('Config.language', $oldLang);
@@ -770,8 +767,8 @@ class AssetHelper extends AppHelper {
 			$rawMatch = trim($rawMatch);
 			$allowedObject = trim($allowedObject);
 			$allowedProperty = trim($allowedProperty);
-			$allowedObject = r('*', '.*', $allowedObject);
-			$allowedProperty = r('*', '.*', $allowedProperty);
+			$allowedObject = str_replace('*', '.*', $allowedObject);
+			$allowedProperty = str_replace('*', '.*', $allowedProperty);
 			$negativeCondition = false;
 			if (substr($allowedObject, 0, 1) == '!') {
 				$allowedObject = substr($allowedObject, 1);
