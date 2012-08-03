@@ -408,8 +408,8 @@ class AssetHelper extends AppHelper {
 			$content = $this->_fetchContentFromPackage($package, $type, $opts['delim']);
 
 			$usePreprocessor = $this->_usePreprocessor && !$opts['preprocessor']['per_file'];
+			
 			if ($type === 'css') {
-				$content = $this->_convertCssPaths($content);
 				if ($usePreprocessor) {
 					$method = '_' . $opts['preprocessor']['method'];
 					$content = $this->{$method}($content);
@@ -475,6 +475,10 @@ class AssetHelper extends AppHelper {
 				$hasPreprocessorExt = $opts['preprocessor']['ext'] === $ext;
 				$usePreprocessor = $this->_usePreprocessor && $opts['preprocessor']['per_file'];
 				$usePreprocessor = $usePreprocessor && $hasPreprocessorExt;
+
+				if($type == 'css') {
+					$content = $this->_convertCssPaths($content, $include);
+				}
 
 				if ($type == 'css' && $usePreprocessor) {
 					$method = '_' . $opts['preprocessor']['method'];
