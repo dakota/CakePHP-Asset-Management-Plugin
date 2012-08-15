@@ -518,14 +518,14 @@ class AssetHelper extends AppHelper {
 	 */
 	function _convertCssPaths($css, $includeFile = '') {
 		$newPath = '../';
-		if (strpos($includeFile, 'Plugin/') !== false) {
+		if (strpos($includeFile, 'Plugin/') !== false || strpos($includeFile, 'plugins/') !== false) {
 			$includePath = explode('/', $includeFile);
 			$cssPath = array();
 			$buildPath = false;
 			foreach ($includePath as $pathFragment) {
 				if ($buildPath && $pathFragment !== 'webroot' && strpos($pathFragment, '.css') === false) {
 					$cssPath[] = $pathFragment;
-				} elseif ($pathFragment == 'Plugin') {
+				} elseif ($pathFragment == 'Plugin' || $pathFragment == 'plugins') {
 					$buildPath = true;
 				}
 			}
