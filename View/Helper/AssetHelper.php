@@ -164,7 +164,7 @@ class AssetHelper extends AppHelper {
 		foreach ($package as $include => $rules) {
 			if ($this->_isAllowed($controller, $action, $rules)) {
 				if (strpos($include, '://') === false && strpos($include, '//') !== 0) {
-					if (strpos($include, 'plugins/') === 0) {
+					if (strpos($include, 'Plugin/') === 0) {
 						$fileName = explode('/', $include);
 						$pluginName = Inflector::camelize($fileName[1]);
 						unset($fileName[0]);
@@ -332,7 +332,7 @@ class AssetHelper extends AppHelper {
 				$myPath = str_replace(':layout:', $layout, $myPath);
 
 				if (isset($this->request->params['plugin'])) {
-					$myPath = str_replace(':plugin:', $this->request->params['controller'], $myPath);
+					$myPath = str_replace(':plugin:', Inflector::camelize($this->request->params['plugin']), $myPath);
 				}
 				if (isset($this->request->params['controller'])) {
 					$myPath = str_replace(':controller:', $this->request->params['controller'], $myPath);
@@ -354,7 +354,8 @@ class AssetHelper extends AppHelper {
 
 
 				if (!empty($this->request->params['plugin'])) {
-					$replace = APP . 'plugins' . DS . $this->request->params['plugin'] . DS . 'webroot' . DS . $type . DS;
+					$replace = App::pluginPath(Inflector::camelize($this->request->params['plugin']));
+					$replace .= 'webroot' . DS . $type . DS;
 					$pluginPath = str_replace(':path:', $replace, $myPath);
 				}
 
@@ -517,14 +518,14 @@ class AssetHelper extends AppHelper {
 	 */
 	function _convertCssPaths($css, $includeFile = '') {
 		$newPath = '../';
-		if (strpos($includeFile, 'plugins/') !== false) {
+		if (strpos($includeFile, 'Plugin/') !== false) {
 			$includePath = explode('/', $includeFile);
 			$cssPath = array();
 			$buildPath = false;
 			foreach ($includePath as $pathFragment) {
 				if ($buildPath && $pathFragment !== 'webroot' && strpos($pathFragment, '.css') === false) {
 					$cssPath[] = $pathFragment;
-				} elseif ($pathFragment == 'plugins') {
+				} elseif ($pathFragment == 'Plugin') {
 					$buildPath = true;
 				}
 			}
@@ -602,7 +603,7 @@ class AssetHelper extends AppHelper {
 		file_put_contents($tmpFile, $content);
 		@chmod($tmpFile, 0777);
 
-		$path = APP . 'plugins' . DS . 'assets' . DS . 'vendors' . DS . 'node_modules' . DS;
+		$path = APP . 'Plugin' . DS . 'assets' . DS . 'vendors' . DS . 'node_modules' . DS;
 		exec($this->pathToNode . ' ' . $path . $cmd . ' ' . $tmpFile, $out);
 		@unlink($tmpFile);
 		return trim(implode("\n", $out));
