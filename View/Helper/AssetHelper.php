@@ -102,10 +102,10 @@ class AssetHelper extends AppHelper {
 
 		foreach ($externals as $file) {
 			if ($type == 'js') {
-				echo sprintf('<script type="text/javascript" src="%s"></script>', $file);
+				echo $this->Html->script($file);
 			}
 			if ($type == 'css') {
-				echo sprintf('<link rel="stylesheet" type="text/css" href="%s"/>', $file);
+				echo $this->Html->css($file);
 			}
 		}
 
