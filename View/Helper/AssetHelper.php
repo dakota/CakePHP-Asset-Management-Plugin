@@ -171,10 +171,10 @@ class AssetHelper extends AppHelper {
 						unset($fileName[1]);
 						$pluginPath = App::pluginPath($pluginName);
 						$include = $pluginPath . 'webroot/' . implode('/', $fileName);
-					}
-
-					if (strpos($include, '/') !== 0) {
+					} elseif (strpos($include, '/') !== 0) {
 						$include = $opts['path'] . $include;
+					} else {
+						$include = WWW_ROOT . $include;
 					}
 
 					if (file_exists($include)) {
