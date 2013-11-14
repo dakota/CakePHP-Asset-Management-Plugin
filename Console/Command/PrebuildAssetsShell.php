@@ -112,7 +112,7 @@ class PrebuildAssetsShell extends Shell {
 		$folderContent = $folder->read();
 		$result = array();
 		foreach ($folderContent[1] as $layout) {
-			$result[] = r('.ctp', '', $layout);
+			$result[] = str_replace('.ctp', '', $layout);
 		}
 		return $result;
 	}
@@ -146,7 +146,7 @@ class PrebuildAssetsShell extends Shell {
  * @author Tim Koschuetzki
  */
 	private function _emptyDir($path) {
-		require_once(LIBS . 'folder.php');
+		require_once(CAKE . 'folder.php');
 		$folder = new Folder($path);
 		$contents = $folder->read();
 		$files = $contents[1];
