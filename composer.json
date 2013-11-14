@@ -1,0 +1,15 @@
+{
+    "name": "dakota/asset",
+    "description": "Asset management plugin for CakePHP",
+    "type": "cakephp-plugin",
+    "authors": [
+        {
+            "name": "Walther Lalk",
+            "email": "emailme@waltherlalk.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.0",
+        "composer/installers": "*"
+    }
+}
